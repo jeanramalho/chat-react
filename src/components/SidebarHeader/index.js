@@ -1,8 +1,54 @@
 import React from 'react'
+import * as C from "./styles"
+import {MdDonutLarge, MdChat, MdMoreVert} from "react-icons/md"
+import * as EmailValidator from "email-validator"
+import { auth, db } from '../../services/firebase'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { useCollection } from "react-firebase-hooks/firestore"
 
-const SidebarHeader = () => {
+const SidebarHeader = ({ setUserChat }) => {
+    const [user] = useAuthState(auth)
+    const refChat = db
+        .collection("chats")
+        .where("users", "array-contains", user.email)
+    const [chatsSnapshot] = useCollection(refChat)
+
+    const handleCreateChat = () => {
+        const emailInput = prompt("Escreva o email desejado")
+
+        if(!emailInput) return;
+
+        if (!EmailValidator.validate(emailInput)) {
+            return alert("Email Inválido")
+        } else if (emailInput === user.email) {
+            return alert("Insira um e-mail diferente do seu")
+        } else if (chatExists(emailInput)) {
+            return alert("chat já existe!")
+        }
+
+        db.collection("chats").add({
+            user: [user.email, emailInput]
+        })
+    }
+
+    const chatExists = (emailChat) => {
+        return !!chatsSnapshot?.docs.find(
+            (chat) => chat.data().users.find((user) => user === emailChat)?.length > 0
+        )
+    }
+
     return (
-        <div>SidebarHeader</div>
+        <C.Container>
+            <C.Avatar
+                src={user?.photoURL}
+                onClick={() => [auth.signOut(), setUserChat(null)]}
+            />
+            <C.Options>
+                <MdDonutLarge />
+                <MdChat onClick={handleCreateChat} />
+                <MdMoreVert />
+            </C.Options>
+        </C.Container>
     )
 }
 
