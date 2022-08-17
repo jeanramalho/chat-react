@@ -3,7 +3,7 @@ import { useAuthState } from 'react-firebase-hooks/auth'
 import { auth, db } from '../../services/firebase'
 import * as C from "./styles"
 import { useCollection } from 'react-firebase-hooks/firestore'
-import SideBarChatsItem from "../sideBarChatsItem"
+import SideBarChatsItem from "../SidebarChatItem"
 
 const SidebarChats = ({ setUserChat, userChat }) => {
     const [user] = useAuthState(auth)
